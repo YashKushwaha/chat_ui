@@ -1,10 +1,21 @@
 from fastapi import FastAPI, UploadFile, File, Form
+from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Request
 import shutil
 import uvicorn
+import os
+
+import sys
+src_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src'))
+sys.path.append(src_dir)
+
+from src import get_model_list
+
+UPLOAD_DIR = "uploads"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 app = FastAPI()
 
@@ -14,17 +25,27 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-#layout = 'basic_layout'
-layout = 'my_layout'
+layout = 'basic_layout'
+UI_BASE = os.path.dirname(__file__)
 
+layout_dir = os.path.join(UI_BASE, 'static','my_layout')
+templates_dir = os.path.join(UI_BASE, 'templates')
+templates = Jinja2Templates(directory=templates_dir)
 
-app.mount("/static", StaticFiles(directory=f"static/{layout}"), name="static")
-app.mount("/images", StaticFiles(directory=f"static/{layout}/images"), name="images")
+model_list =  get_model_list()
 
-@app.get("/", response_class=HTMLResponse)
+app.mount("/static", StaticFiles(directory=layout_dir), name="static")
+app.mount("/images", StaticFiles(directory=os.path.join(layout_dir, 'images')), name="images")
+
+@app.get("/old", response_class=HTMLResponse)
 async def root():
     with open(f"static/{layout}/index.html", "r") as f:
         return f.read()
+
+@app.get("/", response_class=HTMLResponse)
+async def root(request: Request):
+    return templates.TemplateResponse("base.html", {"request": request})
+
 
 @app.post("/chat")
 async def chat(request: Request):
@@ -36,7 +57,7 @@ async def chat(request: Request):
 
 @app.post("/upload")
 async def upload(file: UploadFile = File(...)):
-    file_location = f"uploads/{file.filename}"
+    file_location = f"{UPLOAD_DIR}/{file.filename}"
     with open(file_location, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
     return {"message": f"File '{file.filename}' uploaded successfully"}
