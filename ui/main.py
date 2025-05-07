@@ -1,3 +1,5 @@
+import sys 
+
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
@@ -6,6 +8,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Request
 
 from pydantic import BaseModel
+
+from routes.chat import *
+from routes.settings import QueryRequest, SettingUpdate
+
+from routes import chat, settings
 
 import shutil
 import uvicorn
@@ -39,6 +46,9 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 app = FastAPI()
 
+# Include routers
+app.include_router(chat.router)
+app.include_router(settings.router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -60,14 +70,6 @@ print('LLM config -> ', config['llm'])
 app.mount("/static", StaticFiles(directory=layout_dir), name="static")
 app.mount("/images", StaticFiles(directory=os.path.join(layout_dir, 'images')), name="images")
 
-# Input schema
-class QueryRequest(BaseModel):
-    message: str
-
-class SettingUpdate(BaseModel):
-    key: str
-    value: bool
-
 @app.on_event("startup")
 async def startup_event():
     app.state.embedder = load_text_embedder(config['embedding'])
@@ -83,16 +85,6 @@ async def startup_event():
         "debug_mode": False,
     }
 
-@app.get("/settings")
-def get_settings():
-    return app.state.settings
-
-@app.post("/settings")
-def update_setting(update: SettingUpdate):
-    if update.key not in app.state.settings:
-        return {"error": "Invalid setting key"}
-    app.state.settings[update.key] = update.value
-    return {"message": f"{update.key} updated", "settings": app.state.settings}
 
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
@@ -100,7 +92,6 @@ async def root(request: Request):
 
 @app.post("/test")
 async def chat(request: QueryRequest):
-    print(request)
     return {"response": request.message}
 
 
