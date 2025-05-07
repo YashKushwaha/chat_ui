@@ -6,6 +6,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Request
+from fastapi.responses import JSONResponse, StreamingResponse
 
 from pydantic import BaseModel
 
@@ -36,13 +37,8 @@ print(Path(__file__).resolve().parents[1] )
 config_file = os.path.join(PROJECT_ROOT , "config", "resources.yaml")
 config = get_config(config_file)
 
-
-
 UPLOAD_DIR = os.path.join(PROJECT_ROOT, "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
-
-
-
 
 app = FastAPI()
 
@@ -105,12 +101,22 @@ async def chat(request: QueryRequest):
 @app.post("/chat")
 def ask_rag(request:QueryRequest):
     llm = app.state.llm
-    response = simple_llm_call(
-        question=request.message,
-        llm=llm
-    )
-    return {"response": response}
-
+    stream = False
+    if stream:
+        # Get generator
+        token_generator = simple_llm_call(
+            question=request.message,
+            llm=llm,
+            stream=True)
+        return StreamingResponse(
+            (token for token in token_generator),
+            media_type="text/plain")
+    else:
+        response = simple_llm_call(
+            question=request.message,
+            llm=llm,
+            stream=False)
+        return JSONResponse(content={"response": response})
 
 @app.post("/rag_chat")
 def ask_rag(request:QueryRequest):
@@ -131,7 +137,7 @@ def ask_rag(request:QueryRequest):
     #response = user_message
 
     return {"response": user_message}
-simple_llm_call
+
 
 @app.post("/upload")
 async def upload(file: UploadFile = File(...)):

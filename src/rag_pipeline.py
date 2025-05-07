@@ -1,8 +1,8 @@
 from src.llms import extract_tags_from_text
 
-def simple_llm_call(question, llm):
+def simple_llm_call(question, llm, stream = False):
     prompt = f"You are a helpful assistant asnwer teh following question:\n\nQuestion: {question}"
-    response = llm.generate(prompt)
+    response = llm.generate(prompt, stream=stream)
     return response
 
 def generate_answer(question, embedder, vectorstore, llm):

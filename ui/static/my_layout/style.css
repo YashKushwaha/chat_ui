@@ -152,3 +152,19 @@ html, body {
 #file-upload {
 	display: none;
 }
+
+.chat-message.bot-message {
+  font-family: sans-serif;
+}
+
+.chat-message.bot-message h3 {
+  font-size: 1.2em;
+  margin-top: 1em;
+}
+
+.chat-message.bot-message code {
+  background-color: #f4f4f4;
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  font-family: monospace;
+}

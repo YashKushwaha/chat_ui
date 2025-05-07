@@ -2,6 +2,19 @@ from .base import BaseLLM
 import requests
 from openai import OpenAI
 import os
+import json
+
+def token_stream(response):
+    for line in response.iter_lines():
+        if line:
+            data = line.decode('utf-8')
+            if data.startswith("data: "):
+                data = data[6:]
+            try:
+                json_data = json.loads(data)
+                yield json_data.get("response", "")
+            except Exception as e:
+                print("Stream decode error:", e)
 
 class LlavaModel(BaseLLM):
     def __init__(self, config):
@@ -18,10 +31,21 @@ class OllamaModel(BaseLLM):
         self.model = config['model']
         self.url = config['url']
 
-    def generate(self, prompt: str) -> str:
-        payload = {"model": self.model, "prompt": prompt, "stream" : False }        
-        response = requests.post(self.url, json=payload)
-        return response.json()['response']
+    def generate(self, prompt: str, **kwargs):
+        stream = kwargs.get("stream", False)
+        payload = {
+            "model": self.model,
+            "prompt": prompt,
+            "stream": stream
+        }
+
+        response = requests.post(self.url, json=payload, stream=stream)
+
+        if stream:
+            return token_stream(response)
+        else:
+            return response.json()['response']
+
 
 class OpenAIModel(BaseLLM):
     def __init__(self, config):
