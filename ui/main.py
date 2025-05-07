@@ -4,56 +4,143 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Request
+
+from pydantic import BaseModel
+
 import shutil
 import uvicorn
 import os
-
+from pathlib import Path
 import sys
-src_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src'))
+
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+src_dir = os.path.join(PROJECT_ROOT, 'src')
 sys.path.append(src_dir)
 
 from src import get_model_list
 
-UPLOAD_DIR = "uploads"
+from src.config_loader import get_config
+from src.embedder import load_text_embedder
+from src.vectorstore import load_vector_store
+from src.rag_pipeline import generate_answer_with_filtering, generate_answer, simple_llm_call
+from src.llms import load_llm, OllamaModel
+
+print(Path(__file__).resolve().parents[1] )
+config_file = os.path.join(PROJECT_ROOT , "config", "resources.yaml")
+config = get_config(config_file)
+
+
+
+UPLOAD_DIR = os.path.join(PROJECT_ROOT, "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+
+
+
 app = FastAPI()
+
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 layout = 'basic_layout'
-UI_BASE = os.path.dirname(__file__)
-
+UI_BASE = os.path.join(PROJECT_ROOT, 'ui')
 layout_dir = os.path.join(UI_BASE, 'static','my_layout')
 templates_dir = os.path.join(UI_BASE, 'templates')
 templates = Jinja2Templates(directory=templates_dir)
 
 model_list =  get_model_list()
+print(model_list)
+print('LLM config -> ', config['llm'])
 
 app.mount("/static", StaticFiles(directory=layout_dir), name="static")
 app.mount("/images", StaticFiles(directory=os.path.join(layout_dir, 'images')), name="images")
 
-@app.get("/old", response_class=HTMLResponse)
-async def root():
-    with open(f"static/{layout}/index.html", "r") as f:
-        return f.read()
+# Input schema
+class QueryRequest(BaseModel):
+    message: str
+
+class SettingUpdate(BaseModel):
+    key: str
+    value: bool
+
+@app.on_event("startup")
+async def startup_event():
+    app.state.embedder = load_text_embedder(config['embedding'])
+    app.state.vectorstore = load_vector_store(config['vector_store'])
+    llm_config = config['llm'][config['llm']['provider']]
+    llm_config['model'] = ''.join([i for i in model_list if 'phi' in i])
+    #app.state.llm = load_llm(llm_config)
+    app.state.llm = OllamaModel(llm_config)
+    # Initialize global settings
+    app.state.settings = {
+        "chat_history": False,
+        "feature_x_enabled": True,
+        "debug_mode": False,
+    }
+
+@app.get("/settings")
+def get_settings():
+    return app.state.settings
+
+@app.post("/settings")
+def update_setting(update: SettingUpdate):
+    if update.key not in app.state.settings:
+        return {"error": "Invalid setting key"}
+    app.state.settings[update.key] = update.value
+    return {"message": f"{update.key} updated", "settings": app.state.settings}
 
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
     return templates.TemplateResponse("base.html", {"request": request})
 
+@app.post("/test")
+async def chat(request: QueryRequest):
+    print(request)
+    return {"response": request.message}
 
-@app.post("/chat")
-async def chat(request: Request):
+
+@app.post("/echo")
+async def chat(request: QueryRequest):
     data = await request.json()
     user_message = data.get("message", "")
-    # Mock response – replace with your LLM/RAG logic
     response_message = f"Echo: {user_message}"
     return {"response": response_message}
+
+@app.post("/chat")
+def ask_rag(request:QueryRequest):
+    llm = app.state.llm
+    response = simple_llm_call(
+        question=request.message,
+        llm=llm
+    )
+    return {"response": response}
+
+
+@app.post("/rag_chat")
+def ask_rag(request:QueryRequest):
+
+    embedder = app.state.embedder
+    vectorstore = app.state.vectorstore
+    llm = app.state.llm
+    user_message = request.message
+    
+
+    response = generate_answer(
+        question=request.message,
+        embedder=embedder,
+        vectorstore=vectorstore,
+        llm=llm
+    )
+    print(response)
+    #response = user_message
+
+    return {"response": user_message}
+simple_llm_call
 
 @app.post("/upload")
 async def upload(file: UploadFile = File(...)):
@@ -68,10 +155,5 @@ def get_config():
 
 
 if __name__ == "__main__":
-    uvicorn.run(
-        "main:app",              # import path to your FastAPI app
-        reload=True,            # enables auto-reload on code changes
-        timeout_keep_alive=1,   # short timeout for idle connections
-        host="127.0.0.1",       # optional: specify host
-        port=8000               # optional: specify port
-    )
+    app_path = Path(__file__).resolve().with_suffix('').name  # gets filename without .py
+    uvicorn.run(f"{app_path}:app", host="0.0.0.0", port=8000, reload=True)

@@ -48,6 +48,9 @@ document.getElementById('message-form').addEventListener('submit', function (e) 
   input.value = '';
   chatHistory.scrollTop = chatHistory.scrollHeight;
 
+  // Log the message payload
+  console.log(JSON.stringify({ message }));
+
   fetch('/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -63,5 +66,23 @@ document.getElementById('message-form').addEventListener('submit', function (e) 
   })
   .catch(error => {
     console.error('Error:', error);
+  });
+});
+
+const toggleStates = {};
+
+document.querySelectorAll('.toggle-btn').forEach(button => {
+  const option = button.dataset.option;
+  toggleStates[option] = false; // default state
+
+  button.addEventListener('click', () => {
+    // Toggle state
+    toggleStates[option] = !toggleStates[option];
+
+    // Update button appearance
+    button.classList.toggle('active', toggleStates[option]);
+
+    // Log the updated state (or send it to server)
+    console.log(`Toggled ${option}: ${toggleStates[option]}`);
   });
 });

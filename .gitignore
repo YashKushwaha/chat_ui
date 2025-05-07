@@ -28,3 +28,5 @@ local_only/
 # Model weights (optional)
 *.gguf
 *.bin
+
+**/uploads/**

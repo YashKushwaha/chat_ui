@@ -1,5 +1,10 @@
 from src.llms import extract_tags_from_text
 
+def simple_llm_call(question, llm):
+    prompt = f"You are a helpful assistant asnwer teh following question:\n\nQuestion: {question}"
+    response = llm.generate(prompt)
+    return response
+
 def generate_answer(question, embedder, vectorstore, llm):
     query_embedding = embedder.embed(question)
     relevant_chunks = vectorstore.retrieve(query_embedding)
