@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+**/__pycache__/
+
+*.py[cod]
+*.egg
+*.egg-info/
+dist/
+build/
+
+# IDEs
+.vscode/
+.idea/
+
+#logging
+*.log
+
+# Virtual environments
+.env/
+.venv/
+
+# Vector store artifacts
+stored_vectors/
+
+# Local only folders
+local_only/
+
+# Model weights (optional)
+*.gguf
+*.bin
