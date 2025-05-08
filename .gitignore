@@ -24,7 +24,8 @@ stored_vectors/
 
 # Local only folders
 local_only/
-
+data/
+notebooks
 # Model weights (optional)
 *.gguf
 *.bin

@@ -51,7 +51,7 @@ document.getElementById('message-form').addEventListener('submit', function (e) 
   // Log the message payload
   console.log(JSON.stringify({ message }));
 
-  fetch('/chat', {
+  fetch('/test', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ message })
@@ -60,7 +60,7 @@ document.getElementById('message-form').addEventListener('submit', function (e) 
   .then(data => {
     const botMsgDiv = document.createElement('div');
     botMsgDiv.className = 'chat-message bot-message';
-    botMsgDiv.textContent = data.response || "No response";
+    botMsgDiv.innerHTML = marked.parse(data.response || "No response");
     chatHistory.appendChild(botMsgDiv);
     chatHistory.scrollTop = chatHistory.scrollHeight;
   })
