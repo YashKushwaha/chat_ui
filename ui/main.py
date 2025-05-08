@@ -88,6 +88,7 @@ async def root(request: Request):
 
 @app.post("/test")
 async def chat(request: QueryRequest):
+    print('User input received -> ', request.message)
     return {"response": request.message}
 
 

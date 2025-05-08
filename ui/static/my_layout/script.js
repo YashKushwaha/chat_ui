@@ -18,6 +18,7 @@ const textarea = document.getElementById('userInput');
 
 function sendMessage() {
   const message = textarea.value.trim();
+  console.log(message);
   if (!message) return;
 
   const chatHistory = document.getElementById('chat-history');
@@ -25,7 +26,9 @@ function sendMessage() {
   // Add user message
   const userMsgDiv = document.createElement('div');
   userMsgDiv.className = 'chat-message user-message';
-  userMsgDiv.textContent = message;
+  userMsgDiv.textContent = message;  
+  //userMsgDiv.innerHTML = marked.parse(message.replace(/\n/g, '  \n'));
+  userMsgDiv.innerHTML = message.replace(/\n/g, '<br>');
   chatHistory.appendChild(userMsgDiv);
 
   // Clear input
@@ -51,6 +54,8 @@ function sendMessage() {
     console.error('Error:', error);
   });
 }
+
+
 
 // Handle Enter / Shift+Enter
 textarea.addEventListener('keydown', function (e) {
