@@ -86,18 +86,6 @@ async def startup_event():
 async def root(request: Request):
     return templates.TemplateResponse("base.html", {"request": request})
 
-@app.post("/test")
-async def chat(request: QueryRequest):
-    print('User input received -> ', request.message)
-    return {"response": request.message}
-
-
-@app.post("/echo")
-async def chat(request: QueryRequest):
-    data = await request.json()
-    user_message = data.get("message", "")
-    response_message = f"Echo: {user_message}"
-    return {"response": response_message}
 
 @app.post("/chat")
 def ask_rag(request:QueryRequest):
