@@ -93,6 +93,20 @@ html, body {
   box-sizing: border-box;
 }
 
+.input-box textarea {
+  width: 100%;
+  padding: 10px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  resize: none;              /* Optional: disables manual resize */
+  overflow-y: auto;          /* Enables scrolling if text overflows */
+  line-height: 1.5;          /* Better readability for multiline */
+  min-height: 3rem;          /* Set minimum height */
+  max-height: 200px;         /* Optional cap to avoid over-expansion */
+}
+
 .button-group {
   display: flex;
   gap: 10px;
