@@ -37,13 +37,15 @@ function sendMessage() {
   chatHistory.scrollTop = chatHistory.scrollHeight;
 
   // Send to backend
-  fetch('/test', {
+  fetch('/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ message })
   })
   .then(response => response.json())
   .then(data => {
+    // Log the server response to the console
+    console.log('Server response:', data);
     const botMsgDiv = document.createElement('div');
     botMsgDiv.className = 'chat-message bot-message';
     botMsgDiv.innerHTML = marked.parse((data.response || "No response").replace(/\n/g, '  \n'));
