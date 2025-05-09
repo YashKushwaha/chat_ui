@@ -81,10 +81,25 @@ async def startup_event():
         "debug_mode": False,
     }
 
-
+"""
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
     return templates.TemplateResponse("base.html", {"request": request})
+"""
+    
+@app.get("/", response_class=HTMLResponse)
+async def root(request: Request):
+    return templates.TemplateResponse("base.html", {
+        "request": request,
+        "chat_endpoint": "/chat"
+    })
+
+@app.get("/testing", response_class=HTMLResponse)
+async def testing_ui(request: Request):
+    return templates.TemplateResponse("base.html", {
+        "request": request,
+        "chat_endpoint": "/test"
+    })
 
 
 @app.post("/chat")

@@ -18,7 +18,7 @@ export function sendMessage(textarea) {
     chatHistory.scrollTop = chatHistory.scrollHeight;
 
     // Send to backend
-    fetch('/chat', {
+    fetch(window.CHAT_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message })
