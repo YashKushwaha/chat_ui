@@ -80,13 +80,7 @@ async def startup_event():
         "feature_x_enabled": True,
         "debug_mode": False,
     }
-
-"""
-@app.get("/", response_class=HTMLResponse)
-async def root(request: Request):
-    return templates.TemplateResponse("base.html", {"request": request})
-"""
-    
+   
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
     return templates.TemplateResponse("base.html", {

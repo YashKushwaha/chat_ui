@@ -74,18 +74,18 @@ if __name__ == '__main__':
 
     patient_data = store.patient_data
 
-    print(patient_data.shape)
+    print('shape -> ', patient_data.shape)
 
     #print(patient_data.head())
     #data_points = list(store.nominal_columns_with_mappings.keys())
     data_points = '\n'.join(patient_data.columns)
     single_record = store.get_patient_record(5)
 
-    print(single_record)
-    print(data_points)
+    print('single_record -> \n', single_record)
+    print('data_points -> \n', data_points)
 
-    prompt = store.get_prompt_for_single_patient(data_points, single_record)
+    #prompt = store.get_prompt_for_single_patient(data_points, single_record)
     #agent  = DataAgent(llm=None, dataframe=patient_data)
     #question = 'How many smokers in the dataset?'
     #prompt = agent.construct_prompt(question)
-    pyperclip.copy(prompt)
+    #pyperclip.copy(prompt)

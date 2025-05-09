@@ -39,10 +39,34 @@ def convert_val_to_dict(val):
 def convert_dict_keys_to_int(input_dict):
     return {int(i): j for i,j in  input_dict.items()}
 
+class MetaDataManager:
+    def __init__(self, metadata_file = None):
+        self.metadata_file = metadata_file or '/mnt/f/chat_ui/data/data_schema.xlsx'
+        self.metadata_df = self.get_metadata()
+
+    def get_metadata(self):
+        metadata_df = pd.read_excel(self.metadata_file)
+        metadata_df = data_cleaning(metadata_df)
+        return metadata_df 
+
+    def get_column_descriptions(self, as_text=False):
+        iterator = self.metadata_df[['Variable', 'Variable Label']].itertuples(index=False)
+        res =  {col:desc for col, desc in iterator}
+        if as_text:
+            return self.dict_to_text(res)
+        else:
+            return res
+        
+    def dict_to_text(self, dict_to_convert):
+        rows = []
+        for i,j in dict_to_convert.items(): 
+            rows.append(f'{i} : {j}')
+        return '\n'.join(rows)
+
 class PatientDataStore:
     def __init__(self, data_schema_file = None, patient_data_file = None):
         self.data_schema_file = data_schema_file or '/mnt/f/chat_ui/data/data_schema.xlsx'
-        self.patient_data_file = patient_data_file or '/mnt/f/chat_ui/data/health dataset.xlsx'
+        self.patient_data_file = patient_data_file or '/mnt/f/chat_ui/data/health_dataset.xlsx'
 
         self.nominal_columns_with_mappings, self.variable_to_label_mapping = self.process_data_schema()
         self.patient_data = self.get_patient_data()
@@ -80,9 +104,20 @@ class PatientDataStore:
 
         return patient_data
     
-    def get_patient_record(self, row_num=0):
+    def get_patient_record_old(self, row_num=0):
         data_point = self.patient_data.iloc[row_num].to_dict()
         return data_point
+    
+    def get_patient_record(self, patient_num= 1, row_num=0):
+        try:
+            patient_num_in_db = patient_num in self.patient_data['Patient_Number'].unique()
+            if patient_num_in_db:
+                return self.patient_data[self.patient_data['Patient_Number'] == patient_num].iloc[0].to_dict()
+            else:
+                return self.patient_data.iloc[0].to_dict()
+        except Exception as e:
+            print(e)
+            return dict()
     
     def convert_data_point_to_text(self, data_point):
         out = []
@@ -103,3 +138,15 @@ class PatientDataStore:
         user_prompt = f'USER:\n\n{self.convert_data_point_to_text(patient_record)}'
         final_prompt = '\n'.join([system_prompt, user_prompt])
         return final_prompt
+    
+if __name__ == '__main__':
+    file1 = '/mnt/f/chat_ui/data/data_schema.xlsx'
+    file2 = '/mnt/f/chat_ui/data/data_schema2.xlsx'
+
+    health_metadata = MetaDataManager(file1)
+    activity_metadata = MetaDataManager(file2)
+
+    print(health_metadata.get_column_descriptions(as_text=True))
+    print(10*'=')
+    print(activity_metadata.get_column_descriptions(as_text=True))
+    
