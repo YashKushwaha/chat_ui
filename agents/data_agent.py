@@ -1,6 +1,8 @@
 import pandas as pd
-from llama_cpp import Llama  # or use `ollama` as backend
 import re
+
+from utils.patient_data_manager import PatientDataStore
+import pyperclip
 
 class DataAgent:
     def __init__(self, llm: str, dataframe: pd.DataFrame):
@@ -13,13 +15,23 @@ class DataAgent:
         """
         return f"""
         You are a data assistant. Here's a sample of the data:
-
         {self.dataframe.head(5).to_markdown()}
-
         The user asked: {question}
-
         Write Python code to answer the question using the DataFrame 'df'. Only return code.
         """
+    def construct_prompt_with_metadata(self, question: str, metadata:str) -> str:
+        """
+        Constructs the prompt for the LLM using the provided question and includes metadata to explain column names.
+        """   
+        # Format the prompt with metadata and a sample of the data
+        return f"""
+            You are a data assistant. Here is the metadata explaining the columns:
+            {metadata}
+            Here's a sample of the data:
+            {self.dataframe.head(5).to_markdown()}
+            The user asked: {question}
+            Write Python code to answer the question using the DataFrame 'df'. Only return code.
+            """
 
     def extract_code(self, response_text: str) -> str:
         """
@@ -54,3 +66,16 @@ class DataAgent:
         result = self.execute_code(code)
         return result
 
+if __name__ == '__main__':
+    store = PatientDataStore()
+
+    patient_data = store.get_patient_data()
+
+    print(patient_data.shape)
+
+    print(patient_data.head())
+
+    agent  = DataAgent(llm=None, dataframe=patient_data)
+    question = 'How many smokers in the dataset?'
+    prompt = agent.construct_prompt(question)
+    pyperclip.copy(prompt)
