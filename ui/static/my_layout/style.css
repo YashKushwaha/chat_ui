@@ -46,20 +46,26 @@ html, body {
   max-width: 75%;
   word-wrap: break-word;
   box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-  white-space: pre-wrap;
+  
 }
 
 .user-message {
   align-self: flex-end;
   background-color: #dcf8c6;
-  white-space: normal;  /* This is the key fix */
+  white-space: normal;  /* Tor   white-space: pre-wrap; */
 }
-/*
+
 .bot-message {
   align-self: flex-start;
   background-color: #fff;
 }
-*/
+
+.bot-message p {
+  margin: 0 0 0.5em 0;  /* reduce bottom spacing between paragraphs */
+  line-height: 1.5;      /* optional: improves readability */
+}
+
+/*
 .bot-message {
   padding: 10px 15px;
   border-radius: 15px;
@@ -68,9 +74,9 @@ html, body {
   box-shadow: 0 1px 2px rgba(0,0,0,0.1);
   align-self: flex-start;
   background-color: #fff;
-  /* Remove white-space */
 }
 
+*/
 .form-div {
   width: 75%;
   align-self: center;

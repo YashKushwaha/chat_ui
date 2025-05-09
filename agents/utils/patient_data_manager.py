@@ -45,6 +45,7 @@ class PatientDataStore:
         self.patient_data_file = patient_data_file or '/mnt/f/chat_ui/data/health dataset.xlsx'
 
         self.nominal_columns_with_mappings, self.variable_to_label_mapping = self.process_data_schema()
+        self.patient_data = self.get_patient_data()
 
     def process_data_schema(self):
         df = pd.read_excel(self.data_schema_file)
@@ -78,3 +79,27 @@ class PatientDataStore:
             patient_data[col] = patient_data[col].map(label_mapping)
 
         return patient_data
+    
+    def get_patient_record(self, row_num=0):
+        data_point = self.patient_data.iloc[row_num].to_dict()
+        return data_point
+    
+    def convert_data_point_to_text(self, data_point):
+        out = []
+        for i,j in data_point.items():
+            row = f'{i} : {j}'
+            out.append(row)
+        return '\n'.join(out)
+
+    def get_prompt_for_single_patient(self, data_points, patient_record):
+        system_prompt = f"""
+        System:\n\nYou are a healthcare expert. You will be provided data points from patient report.
+        You have to analyze the data points and write a 100 to 500 word report on patient health.
+        Here are the fields expected in patient report:
+        ===
+        {data_points}
+        ===
+        """
+        user_prompt = f'USER:\n\n{self.convert_data_point_to_text(patient_record)}'
+        final_prompt = '\n'.join([system_prompt, user_prompt])
+        return final_prompt

@@ -32,6 +32,8 @@ class DataAgent:
             The user asked: {question}
             Write Python code to answer the question using the DataFrame 'df'. Only return code.
             """
+    def construct_from_for_single_data_point(row_num = 0):
+        pass
 
     def extract_code(self, response_text: str) -> str:
         """
@@ -66,16 +68,24 @@ class DataAgent:
         result = self.execute_code(code)
         return result
 
+
 if __name__ == '__main__':
     store = PatientDataStore()
 
-    patient_data = store.get_patient_data()
+    patient_data = store.patient_data
 
     print(patient_data.shape)
 
-    print(patient_data.head())
+    #print(patient_data.head())
+    #data_points = list(store.nominal_columns_with_mappings.keys())
+    data_points = '\n'.join(patient_data.columns)
+    single_record = store.get_patient_record(5)
 
-    agent  = DataAgent(llm=None, dataframe=patient_data)
-    question = 'How many smokers in the dataset?'
-    prompt = agent.construct_prompt(question)
+    print(single_record)
+    print(data_points)
+
+    prompt = store.get_prompt_for_single_patient(data_points, single_record)
+    #agent  = DataAgent(llm=None, dataframe=patient_data)
+    #question = 'How many smokers in the dataset?'
+    #prompt = agent.construct_prompt(question)
     pyperclip.copy(prompt)
