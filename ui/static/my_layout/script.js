@@ -1,5 +1,5 @@
 import { initializeToggleButtons } from './toggleButton.js';
-import { sendMessage, handleTextareaInput } from './textareaHandler.js';
+import {sendMessage, handleTextareaInput } from './textareaHandler.js';
 import { handleFileUpload } from './fileUploadHandler.js';
 
 console.log("Script loaded");
