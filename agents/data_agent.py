@@ -68,24 +68,34 @@ class DataAgent:
         result = self.execute_code(code)
         return result
 
-
-if __name__ == '__main__':
+def test_patient_store():
     store = PatientDataStore()
-
     patient_data = store.patient_data
-
     print('shape -> ', patient_data.shape)
-
-    #print(patient_data.head())
-    #data_points = list(store.nominal_columns_with_mappings.keys())
     data_points = '\n'.join(patient_data.columns)
     single_record = store.get_patient_record(5)
-
     print('single_record -> \n', single_record)
     print('data_points -> \n', data_points)
 
+if __name__ == '__main__':
+
+
     #prompt = store.get_prompt_for_single_patient(data_points, single_record)
-    #agent  = DataAgent(llm=None, dataframe=patient_data)
+    agent  = DataAgent(llm=None, dataframe=None)
+    server_response = """Certainly! You can create a dummy DataFrame using the `pandas` library. Here's a simple example of how to do this:\n\n```python\nimport pandas as pd\n\n# Create a dummy DataFrame with some values\ndata = {\n    'Name': ['Alice', 'Bob', 'Charlie'],\n    'Age': [25, 30, 35],\n    'City': ['New York', 'Los Angeles', 'Chicago']\n}\n\n# Convert the dictionary to a DataFrame\ndf = pd.DataFrame(data)\n\n# Display the DataFrame\nprint(df)\n```\n\nThis code will create and print a DataFrame with three columns: `Name`, `Age`, and `City`, each containing some sample data. Make sure you have `pandas` installed in your Python environment, which you can do using `pip install pandas`."""
+
+    code = agent.extract_code(server_response)
+    print('Code to be executed')
+    print(5*'=')
+    print(code)
+    print(5*'=')
+
+    exec_locals = agent.execute_code(code)
+    print(5*'=')
+    for i,j in exec_locals.items():
+        print(i)
+        print(j)
+        print(5*'-')
     #question = 'How many smokers in the dataset?'
     #prompt = agent.construct_prompt(question)
     #pyperclip.copy(prompt)
