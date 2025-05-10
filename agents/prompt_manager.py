@@ -11,8 +11,8 @@ class PromptManager:
             return Template(f.read())
         
 if __name__ == '__main__':
-    file1 = '/mnt/f/chat_ui/data/data_schema.xlsx'
-    file2 = '/mnt/f/chat_ui/data/data_schema2.xlsx'
+    file1 = '/mnt/f/chat_ui/data/health_metadata.xlsx'
+    file2 = '/mnt/f/chat_ui/data/activity_metadata.xlsx'
 
     health_metadata = MetaDataManager(file1)
     activity_metadata = MetaDataManager(file2)

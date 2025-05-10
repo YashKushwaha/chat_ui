@@ -30,4 +30,4 @@ notebooks
 *.gguf
 *.bin
 
-**/uploads/**
+uploads/

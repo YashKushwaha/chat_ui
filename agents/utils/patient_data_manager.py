@@ -139,6 +139,23 @@ class PatientDataStore:
         final_prompt = '\n'.join([system_prompt, user_prompt])
         return final_prompt
     
+    def get_patient_data_metadata():
+        file1 = '/mnt/f/chat_ui/data/data_schema.xlsx'
+        file2 = '/mnt/f/chat_ui/data/data_schema2.xlsx'
+
+        health_metadata = MetaDataManager(file1)
+        activity_metadata = MetaDataManager(file2)
+
+        output = []
+        output.append(f'DataFrame name -> health')
+        output.append(f'Column List & Description')
+        output.append(health_metadata.get_column_descriptions(as_text=True))
+        output.append(f'DataFrame name -> activity')
+        output.append(f'Column List & Description')
+        output.append(activity_metadata.get_column_descriptions(as_text=True))
+        
+
+        return '\n'.join(output)
 if __name__ == '__main__':
     file1 = '/mnt/f/chat_ui/data/data_schema.xlsx'
     file2 = '/mnt/f/chat_ui/data/data_schema2.xlsx'
