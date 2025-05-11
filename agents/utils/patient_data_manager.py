@@ -65,7 +65,7 @@ class MetaDataManager:
 
 class PatientDataStore:
     def __init__(self, data_schema_file = None, patient_data_file = None):
-        self.data_schema_file = data_schema_file or '/mnt/f/chat_ui/data/data_schema.xlsx'
+        self.data_schema_file = data_schema_file or '/mnt/f/chat_ui/data/health_schema.xlsx'
         self.patient_data_file = patient_data_file or '/mnt/f/chat_ui/data/health_dataset.xlsx'
 
         self.nominal_columns_with_mappings, self.variable_to_label_mapping = self.process_data_schema()
@@ -108,7 +108,9 @@ class PatientDataStore:
         data_point = self.patient_data.iloc[row_num].to_dict()
         return data_point
     
-    def get_patient_record(self, patient_num= 1, row_num=0):
+    def get_patient_record_old(self, patient_num= 1, row_num=0):
+        if isinstance(patient_num, str):
+            patient_num = int(patient_num)
         try:
             patient_num_in_db = patient_num in self.patient_data['Patient_Number'].unique()
             if patient_num_in_db:
@@ -119,6 +121,20 @@ class PatientDataStore:
             print(e)
             return dict()
     
+    def get_patient_record(self, patient_id= 1, row_num=0):
+        if isinstance(patient_id, str):
+            patient_id = int(patient_id)
+        try:
+            patient_num_in_db = patient_id in self.patient_data['Patient_Number'].unique()
+            if patient_num_in_db:
+                return self.patient_data[self.patient_data['Patient_Number'] == patient_id].iloc[0].to_dict()
+            else:
+                return self.patient_data.iloc[0].to_dict()
+        except Exception as e:
+            print(e)
+            return dict()
+
+
     def convert_data_point_to_text(self, data_point):
         out = []
         for i,j in data_point.items():
@@ -139,31 +155,33 @@ class PatientDataStore:
         final_prompt = '\n'.join([system_prompt, user_prompt])
         return final_prompt
     
-    def get_patient_data_metadata():
-        file1 = '/mnt/f/chat_ui/data/data_schema.xlsx'
-        file2 = '/mnt/f/chat_ui/data/data_schema2.xlsx'
-
-        health_metadata = MetaDataManager(file1)
-        activity_metadata = MetaDataManager(file2)
-
-        output = []
-        output.append(f'DataFrame name -> health')
-        output.append(f'Column List & Description')
-        output.append(health_metadata.get_column_descriptions(as_text=True))
-        output.append(f'DataFrame name -> activity')
-        output.append(f'Column List & Description')
-        output.append(activity_metadata.get_column_descriptions(as_text=True))
-        
-
-        return '\n'.join(output)
-if __name__ == '__main__':
-    file1 = '/mnt/f/chat_ui/data/data_schema.xlsx'
-    file2 = '/mnt/f/chat_ui/data/data_schema2.xlsx'
+def get_patient_data_metadata():
+    file1 = '/mnt/f/chat_ui/data/health_schema.xlsx'
+    file2 = '/mnt/f/chat_ui/data/activity_schema.xlsx'
 
     health_metadata = MetaDataManager(file1)
     activity_metadata = MetaDataManager(file2)
 
-    print(health_metadata.get_column_descriptions(as_text=True))
-    print(10*'=')
-    print(activity_metadata.get_column_descriptions(as_text=True))
+    output = []
+    output.append(f'DataFrame name -> health')
+    output.append(f'Column Name & Description -')
+    output.append(health_metadata.get_column_descriptions(as_text=True))
+    output.append('\n')
+    output.append(f'DataFrame name -> activity')
+    output.append(f'Column Name & Description -')
+    output.append(activity_metadata.get_column_descriptions(as_text=True))    
+    return '\n'.join(output)
     
+def test():
+        file1 = '/mnt/f/chat_ui/data/health_schema.xlsx'
+        file2 = '/mnt/f/chat_ui/data/activity_schema.xlsx'
+
+        health_metadata = MetaDataManager(file1)
+        activity_metadata = MetaDataManager(file2)
+
+        print(health_metadata.get_column_descriptions(as_text=True))
+        print(10*'=')
+        print(activity_metadata.get_column_descriptions(as_text=True))
+
+if __name__ == '__main__':
+    print(get_patient_data_metadata())
