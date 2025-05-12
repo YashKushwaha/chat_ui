@@ -34,7 +34,6 @@ Action Input: [JSON input]
 Only use tools when needed. Available tools:
 - fetch_health_data(patient_id) - returns all records available in the database for a given patient id from the health data table. Note it cant return the entire dataset
 - eval_code(code) - can execute python code. useful for user queries that requires joining health data table and the activity data table
-
 """
 
 medical_expert = """

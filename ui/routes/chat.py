@@ -4,6 +4,10 @@ from fastapi.responses import JSONResponse, StreamingResponse
 
 from src.rag_pipeline import generate_answer, simple_llm_call
 from agents.agent import agent_call
+from agents.table_expert_agent import TabularDataExpertAgent
+from agents.medical_data_expert_agent import MedicalDataExpertAgent
+
+from agents.query_router_agent import QueryRouterAgent
 
 class QueryRequest(BaseModel):
     message: str
@@ -58,10 +62,17 @@ def ask_rag(request: Request, query: QueryRequest):
             stream=False)
         return JSONResponse(content={"response": response})
 
-@router.post("/agent")
+@router.post("/agent_old")
 def agent(request: Request, query: QueryRequest):
     llm = request.app.state.llm
     response = agent_call(
         question=query.message,
         llm=llm)
+    return JSONResponse(content={"response": response})
+
+@router.post("/agent")
+def agent(request: Request, query: QueryRequest):
+    llm = request.app.state.llm
+    agent = QueryRouterAgent(llm=llm)
+    response = agent.run(user_query=query.message)
     return JSONResponse(content={"response": response})
