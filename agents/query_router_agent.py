@@ -1,6 +1,13 @@
+import json
+import re
+from typing import Optional, Tuple
+
 from jinja2 import Template
 from .medical_data_expert_agent import MedicalDataExpertAgent
 from .table_expert_agent import TabularDataExpertAgent
+
+from .utils import extract_agent_action
+
 
 FIRST_PROMPT_TEMPLATE = """
 SYSTEM:
@@ -15,7 +22,7 @@ Your job is to understand the user's intent and decide whether:
 
 You have access to the following agents:
 
-- `medical_data_expert_agent`: This agent can fetch all available records for a patient (if patient number is provided), analyze the data, and return a medical report.
+- `medical_data_expert_agent`: Use this agent when the user asks about a specific patient's health or wants a medical report. This agent can fetch patient records and analyze their health and activity data.
 - `tabular_data_expert_agent`: This agent has access to all tables in the patient database and can execute code to return relevant information.
 
 If an agent needs to be invoked, respond in the following format:
@@ -24,6 +31,7 @@ Thought: [reasoning]
 Action: [agent_name]  
 Action Input: [JSON input]
 
+Please always output the lines starting with Action: and Action Input: as plain text (no markdown formatting, no bold, no code blocks).
 If no agent is needed (e.g., for greetings or small talk), respond conversationally and ask how you can assist with the data.
 
 Only use agents when necessary. Do not fabricate information.
@@ -46,16 +54,12 @@ class QueryRouterAgent:
         prompt = FIRST_PROMPT_TEMPLATE.render(user_query=user_query)
         print(prompt)
         response = self.llm.generate(prompt)
-        # Check if it's an agent invocation
-        if "Action:" in response:
-            action_line = next(line for line in response.splitlines() if line.startswith("Action:"))
-            input_line = next(line for line in response.splitlines() if line.startswith("Action Input:"))
-
-            agent_name = action_line.split("Action:")[1].strip()
-            #agent_input = eval(input_line.split("Action Input:")[1].strip())  # Safer to use json.loads() if JSON
-            agent_input = input_line.split("Action Input:")[1].strip()
-            print('agent_name -> ', agent_name)
-            print('agent_input -> ', agent_input)
+        
+        result = extract_agent_action(response)
+        if result:
+            agent_name, agent_input = result
+            print("Agent Name:", agent_name)
+            print("Agent Input:", agent_input)
 
             agent_to_run = AGENTS.get(agent_name)
             if agent_to_run and (agent_name == 'tabular_data_expert_agent'):
@@ -64,8 +68,7 @@ class QueryRouterAgent:
             if agent_to_run and (agent_name == 'medical_data_expert_agent'):
                 agent = agent_to_run(llm=self.llm)
                 response = agent.run(user_query)
-            print('agent_to_run by query router--> ', agent_to_run)
-            return response
         else:
-            # Direct response (no agent used)
-            return response
+            print("No actionable agent found.")
+
+        return response
