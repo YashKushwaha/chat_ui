@@ -38,13 +38,10 @@ You have to analyze the data points and answer user query.
 USER:
 {{user_query}}"""
 
-
-
 FIRST_PROMPT_TEMPLATE = Template(FIRST_PROMPT_TEMPLATE)
 SECOND_PROMPT_TEMPLATE = Template(SECOND_PROMPT_TEMPLATE)
 
 patient_data_store = PatientDataStore()
-
 
 class MedicalDataExpertAgent:
     def __init__(self, llm, table_details=None):
