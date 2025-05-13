@@ -1,4 +1,6 @@
 import os
+from pathlib import Path
+
 from src import get_model_list
 from src.config_loader import get_config
 # main.py
@@ -10,7 +12,21 @@ from routes import chat, settings, ui, upload, config as config_routes
 from config.settings import STATIC_DIR, IMAGES_DIR, PROJECT_ROOT
 from events.startup import create_startup_handler
 
-app = FastAPI()
+
+app = FastAPI(
+    title="My Cool API",
+    description="This API does awesome stuff.",
+    version="1.0.0",
+    docs_url="/doc",
+    redoc_url='/redoc',
+    contact={
+        "name": "API Support",
+        "email": "support@example.com",
+    },
+    license_info={
+        "name": "MIT",
+    },
+)
 
 # Routers
 app.include_router(chat.router)
@@ -41,4 +57,5 @@ app.add_event_handler("startup", on_startup)
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    app_path = Path(__file__).resolve().with_suffix('').name  # gets filename without .py
+    uvicorn.run(f"{app_path}:app", host="0.0.0.0", port=8000, reload=True)
