@@ -17,3 +17,10 @@ async def testing_ui(request: Request):
         "request": request,
         "chat_endpoint": "/test"
     })
+
+@router.get("/agent", response_class=HTMLResponse)
+async def testing_ui(request: Request):
+    return templates.TemplateResponse("base.html", {
+        "request": request,
+        "chat_endpoint": "/agent"
+    })

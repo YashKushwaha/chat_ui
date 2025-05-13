@@ -37,7 +37,8 @@ def extract_agent_action(text):
     input_match = re.search(r"Action Input:\s*({.*})", text, re.DOTALL)
 
     if not action_match or not input_match:
-        raise ValueError("No actionable agent found.")
+        return None
+        #raise ValueError("No actionable agent found.")
 
     action = action_match.group(1).strip()
     action_input_str = input_match.group(1).strip()
@@ -45,6 +46,7 @@ def extract_agent_action(text):
     try:
         action_input = json.loads(action_input_str)
     except json.JSONDecodeError as e:
+        print('action_input_str -> ',action_input_str)
         raise ValueError(f"Failed to extract action: {e}")
-
+        return ('', '')
     return action, action_input

@@ -54,7 +54,8 @@ class MedicalDataExpertAgent:
         print(10*'=')
         print('prompt', prompt)
         response = self.llm.generate(prompt)
-
+        print('Medical data expert, first LLM call reponse')
+        print(response)
         result = extract_agent_action(response)
 
         if result:
