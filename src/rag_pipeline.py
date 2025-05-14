@@ -21,8 +21,7 @@ def generate_answer_with_filtering(question, embedder, vectorstore, llm):
     print(filter_dict)
 
     relevant_chunks_with_no_filtering = vectorstore.retrieve(query_embedding)
-    relevant_chunks = vectorstore.retrieve(query_embedding, filter=filter_dict)
-    
+    relevant_chunks = vectorstore.retrieve(query_embedding, filter=filter_dict)   
     #
 
     context = "\n".join(
