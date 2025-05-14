@@ -7,8 +7,9 @@ from src.config_loader import get_config
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.sessions import SessionMiddleware
 
-from routes import chat, settings, ui, upload, config as config_routes
+from routes import chat, settings, ui, upload, auth, config as config_routes
 from config.settings import STATIC_DIR, IMAGES_DIR, PROJECT_ROOT
 from events.startup import create_startup_handler
 
@@ -32,6 +33,7 @@ app = FastAPI(
 app.include_router(chat.router)
 app.include_router(settings.router)
 app.include_router(ui.router)
+app.include_router(auth.router)
 app.include_router(upload.router)
 app.include_router(config_routes.router)
 
@@ -47,6 +49,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.add_middleware(SessionMiddleware, secret_key="your-very-secret-key")
 
 # Startup Event
 config_file = os.path.join(PROJECT_ROOT , "config", "resources.yaml")
